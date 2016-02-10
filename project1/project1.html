@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROBERT'S HEIST</title>
+    <link href="project1.css" type ="text/css" rel="stylesheet"/>
+</head>
+<body onload ="init()">
+    <canvas id ="canvas" width ="600" height ="600"></canvas>
+    <div id = "banner"></div>
+    <script type="text/javascript">
+    // Global variables
+    var colums = 20;
+    var rows = 20;
+    var EMPTY = 0;
+    var ROBBER = 1;
+    var COIN = 2;
+    var POLICE = 3;
+    var LOOT = 4;
+    var LEFT = 0;
+    var UP = 1;
+    var RIGHT =2;
+    var DOWN = 3;
+    var rightDown = false;
+    var leftDown = false;
+    var downDown = false;
+    var upDown = false;
+    var keepLooping = 1;
+    var canvas;
+    var context;
+    var keystate;
+    var interval;
+    var score;
+    var coinimg;
+    var robberimg;
+    var policeimg;
+        
+    //robber object
+    var robber = {
+        direction: null,
+        prevPosition: null,
+        currentPos: null,
+        
+        //initializing the robber function
+        init: function(dir,xpos,ypos){
+            this.currentPos = [];
+            this.direction = dir;
+            this.addSection(xpos,ypos);
+        },
+        addSection: function(xpos,ypos){
+            this.currentPos.unshift({x:xpos,y:ypos});
+            this.prevPosition = this.currentPos[0];
+        }
+    }
+    
+    //world object
+    var world = {
+        map: null,
+        numOfCols: null,
+        numOfRows: null,
+        
+        //populates the cells with default values
+        populate: function(val,cols,rows){
+            this.numOfCols = cols;
+            this.numOfRows = rows;
+            
+            this.map = [];
+            //goes through number of rows and cols to populate cells
+            for(var i = 0; i < cols; i++){
+                this.map.push([]);
+                for(var j=0; j < rows; j++){
+                    //append default value to map
+                    this.map[i].push(val);
+                }
+            }
+        },
+        
+        //gets the value at the postion x and y
+        get: function(xpos,ypos){ 
+            return this.map[xpos][ypos];
+        },
+        //set function to set the val at certain position in x and y
+        set: function(val,xpos ,ypos){
+            this.map[xpos][ypos] = val;
+        }
+    }
+    
+    //sets a new coin object
+    function setCoin() {
+        var defaultCoin = [];
+        //goes through loop of cols and rows
+        for(var x =0; x < world.numOfCols; x++){
+            for(var y=0; y < world.numOfRows; y++){
+                //if theres an empty cell push a coin in that position
+                if (world.get(x,y) === EMPTY) {
+                    defaultCoin.push({x:x,y:y});
+                }
+            }
+        }
+        //get random x and y values
+        var coinPos = defaultCoin[Math.floor(Math.random()*defaultCoin.length)];
+        //place the coin in that random position x and y
+        world.set(COIN, coinPos.x, coinPos.y);
+    }
+    //sets a new police object
+    function setPolice() {
+        var defaultPolice = [];
+        //goes through loop of cols and rows
+        for(var x =0; x < world.numOfCols; x++){
+            for(var y=0; y < world.numOfRows; y++){
+                //if theres an empty cell push a police in that position
+                if (world.get(x,y) === EMPTY) {
+                    defaultPolice.push({x:x,y:y});
+                }
+            }
+        }
+        //get random x and y values
+        var policePos = defaultPolice[Math.floor(Math.random()*defaultPolice.length)];
+         //place the police in that random position x and y
+        world.set(POLICE, policePos.x, policePos.y);
+    }
+        
+    //init function
+    function init() {
+        canvas = document.getElementById('canvas');
+        context = canvas.getContext('2d');
+        
+        //set the interval to 10
+        interval = 10;
+
+        //event listeners for key presses
+        window.addEventListener('keydown',onKeyDown,true);
+        window.addEventListener('keyup',onKeyUp,true);
+        
+        //start the game and start the game loop
+        gameStart();
+        gameLoop();
+
+    }
+    //initializes the game
+    function gameStart() {
+        //populate the world with empty values for every col and row
+        world.populate(EMPTY, colums, rows);
+        //set starting pos of the robber
+        var startingPos = {x:15, y:15};
+        world.set(ROBBER, startingPos.x,startingPos.y);
+        //set robbers initial direction to up
+        robber.init(UP, startingPos.x,startingPos.y);
+        //sets a new coin and police in random places on the world
+        setCoin();
+        setPolice();
+        //score set to 0
+        score = 0;
+    }
+    //game loop
+    function gameLoop() {
+        draw();
+        interval++;
+        //keeplooping unless the value is not 1
+        if(keepLooping == 1)
+            window.requestAnimationFrame(gameLoop);
+    }
+    //game over function
+    function gameover(){
+        //clear the canvas
+        context.clearRect(0,0,canvas.width,canvas.height);
+        world.populate(EMPTY,colums,rows);
+        //stop the game loop
+        keepLooping = 2;
+        //display game over message with highscore
+        context.fillStyle = 'black';
+        context.font="75px Arial";
+        context.fillText("GAME OVER!!! HIGH SCORE: " + score, 150, 300,300);
+    }
+    
+    //keydown events
+	function onKeyDown(evt) 
+	{
+ 		 if (evt.keyCode == 37){
+             leftDown = true;
+         }else if (evt.keyCode == 38){
+             upDown = true;
+         }else if (evt.keyCode == 39){
+             rightDown = true;
+         }else if (evt.keyCode == 40){
+             downDown = true;
+         }
+        
+	}
+    //keyup events
+	function onKeyUp(evt) 
+	{
+        if (evt.keyCode == 37){
+             leftDown = false;
+         }else if (evt.keyCode == 38){
+             upDown = false;
+         }else if (evt.keyCode == 39){
+             rightDown = false;
+         }else if (evt.keyCode == 40){
+             downDown = false;
+         }
+	}
+	
+    //draw function    
+    function draw() {
+        //move robber accordingly by which keys are pressed
+        if(rightDown && robber.direction !== LEFT){
+            robber.direction = RIGHT;
+        }else if(leftDown && robber.direction !== RIGHT){
+            robber.direction = LEFT;
+        }else if(upDown && robber.direction !== DOWN){
+            robber.direction = UP;
+        }else if(downDown && robber.direction !== UP){
+            robber.direction = DOWN;
+        }
+        
+        //every 10 intervals
+        if(interval % 10 == 0){
+            var updateX = robber.prevPosition.x;
+            var updateY = robber.prevPosition.y;
+            //update the new x and y coordinates for the robber
+            if(robber.direction === LEFT)
+                updateX--;
+            if(robber.direction === RIGHT)
+                updateX++;
+            if(robber.direction === UP)
+                updateY--;
+            if(robber.direction === DOWN)
+                updateY++;
+           
+            //if the new position is on the coin
+            if(world.get(updateX,updateY) === COIN){
+                //update the tail
+                var tail = {x:updateX,y:updateY};
+                //increase score
+                score +=1;
+                //set a new coin and add another police
+                setCoin();
+                setPolice();
+            //game over if you run into a police
+            }else if(world.get(updateX,updateY) === POLICE){
+                return gameover();
+            }else{
+                //remove last element and update the new tail x and y position
+                var tail = robber.currentPos.pop();
+                world.set(EMPTY, tail.x,tail.y);
+                tail.x = updateX;
+                tail.y = updateY;     
+            }
+            
+            //check boundaries
+            if(updateX < 0 || updateX > world.numOfCols-1){
+                return gameover();
+            }else if(updateY> world.numOfRows-1 || updateY < 0 ){
+                return gameover();
+            }
+            
+            //prepend a new robber 
+            world.set(ROBBER, tail.x,tail.y);
+            robber.addSection(tail.x,tail.y);
+        }
+        //drawing the images
+        coinimg = new Image();
+        robberimg = new Image();
+        policeimg = new Image();
+        policeimg.src = 'assets/images/police.png';
+        coinimg.src = 'assets/images/coin.png';
+        robberimg.src = 'assets/images/robber.png';
+        //loop through cols and rows
+        for(var i = 0; i < world.numOfCols; i++){
+            for(var j = 0; j < world.numOfRows; j++){
+                if(world.get(i,j) === COIN){
+                    context.drawImage(coinimg,i*30,j*30);
+                }else if(world.get(i,j) === LOOT){
+                    context.drawImage(coinimg,i*30,j*30);
+                }else if(world.get(i,j) === ROBBER){
+                    context.drawImage(robberimg,i*30,j*30);
+                }else if(world.get(i,j) === POLICE){
+                    context.drawImage(policeimg,i*30,j*30);
+                }else if(world.get(i,j) === EMPTY){
+                    context.fillStyle = 'white';
+                    context.fillRect(i*30, j*30,30,30);
+                }   
+            }
+        }
+        //show score
+        context.fillStyle = 'red';
+        context.font="20px Arial";
+        context.fillText("SCORE: " + score, 400, 30);
+    }
+
+   
+    </script>
+</body>
+</html>
