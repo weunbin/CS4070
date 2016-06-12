@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+    <head>
+        <title>A* Path Finding Algorithm</title>
+        <!-- Files that are included -->
+        
+    </head>
+    <body onload="initGrid()"> 
+        
+        <!-- Instruction text for the user -->
+        <h3>Instructions :</h3>
+        <p>
+            Press the reset button to clear the grid. Input a number for both the height and width input boxes and then press Reset Grid to configure size of the grid. <br/> Click once on a tile to set the start node (GREEN). Click again on a tile to set the goal node (RED). Every consecutive click after the goal node will be obstacle nodes (BLUE).
+            <br/>
+            You can control the speed of the animation by sliding the animation slider to the right to go faster and left to go slower.
+        </p>
+        <div id ="grid">
+            <canvas id ="canvas" height="500" width="500"></canvas>
+            <script type="text/javascript" src = "Tile.js"></script>
+            <script type="text/javascript" src = "Grid.js"></script>
+            <script type="text/javascript" src = "Pathfinding.js"></script>
+            <link href="Pathfinding.css" type="text/css" rel="stylesheet"/>
+            <div id="buttons">
+            Animation Speed: <input id ="speed" type = "range" value="1" max = "5">
+            Width: <input id="width" type="number" value = "10">
+            Height: <input id="height" type="number"  value ="10">
+            <br/><br/>
+            <button id="startButton" onclick="startPathFinding()">Start A* Algorithm</button>
+            <button id="startDijkstra" onclick="startDijkstra()">Start Dijkstra's Algorithm</button>
+            <button id="startBestFirst" onclick="startBestFirst()">Start Best First Algorithm</button>
+            <button id="clearbutton" onclick ="clearGrid()">Reset Grid</button>
+            <br/>
+                <p id ="pathlength">
+            
+            </p>
+        </div>
+        </div>
+    </body>
+    
+</html>
